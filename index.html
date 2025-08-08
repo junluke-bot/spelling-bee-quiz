@@ -68,7 +68,7 @@
 <audio id="wrongSound" src="https://actions.google.com/sounds/v1/cartoon/cartoon_boing.ogg"></audio>
 
 <script>
-  const flashcards = [
+  const allFlashcards = [
     ["Adventure", "An exciting or unusual experience"],
     ["Ancient", "Very old; from a long time ago"],
     ["Arrive", "To reach a place"],
@@ -84,7 +84,7 @@
     ["Journey", "A trip from one place to another"],
     ["Unique", "One of a kind; different from all others"],
     ["Protect", "To keep safe from harm"],
-    ["Magnify", "To make something look bigger"]
+    ["Magnify", "To make something look bigger"],
     ["Mischief", "Playful or naughty behavior"],
     ["Neighbor", "Someone who lives near you"],
     ["Notice", "To see or pay attention to"],
@@ -210,26 +210,38 @@
     ["Butter", "A soft yellow food made from milk"],
     ["Buy", "To get something by paying money"],
     ["By", "Near or next to"]
-    // Add more as needed
   ];
+
+  // Shuffle and pick 10 random questions
+  function getRandomQuizSet(array, count) {
+    const shuffled = [...array].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, count);
+  }
+
+  const flashcards = getRandomQuizSet(allFlashcards, 10);
 
   let current = 0;
   let score = 0;
   let correctWord = "";
-  shuffle(flashcards);
-
-  function shuffle(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
-    }
-  }
+  let wrongAnswers = [];
 
   function loadQuestion() {
     if (current >= flashcards.length) {
       document.querySelector(".card").style.display = "none";
-      document.getElementById("scoreText").innerText =
-        `🎉 Quiz Complete! Final Score: ${score} / ${flashcards.length}`;
+
+      let result = `🎉 Quiz Complete! Final Score: ${score} / ${flashcards.length}`;
+
+      if (wrongAnswers.length > 0) {
+        result += `<br><br>📝 You missed these words:<ul>`;
+        wrongAnswers.forEach(item => {
+          result += `<li><strong>${item.word}</strong>: ${item.definition} (You chose: "${item.chosen}")</li>`;
+        });
+        result += `</ul>`;
+      } else {
+        result += `<br><br>✅ Perfect! You got everything right!`;
+      }
+
+      document.getElementById("scoreText").innerHTML = result;
       return;
     }
 
@@ -254,12 +266,12 @@
   function generateChoices(correct) {
     const options = [correct];
     while (options.length < 4) {
-      const random = flashcards[Math.floor(Math.random() * flashcards.length)][0];
+      const random = allFlashcards[Math.floor(Math.random() * allFlashcards.length)][0];
       if (!options.includes(random)) {
         options.push(random);
       }
     }
-    return options.sort(() => 0.5 - Math.random()); // Shuffle options
+    return options.sort(() => 0.5 - Math.random());
   }
 
   function checkAnswer(button) {
@@ -275,11 +287,16 @@
       document.getElementById("feedback").textContent = `❌ Wrong! Correct answer: ${correct}`;
       document.getElementById("feedback").style.color = "red";
       document.getElementById("wrongSound").play();
+
+      wrongAnswers.push({
+        word: correct,
+        definition: flashcards[current][1],
+        chosen: userChoice
+      });
     }
 
     document.getElementById("scoreText").innerText = `Score: ${score}`;
 
-    // Disable all buttons after answer
     document.querySelectorAll(".choice-btn").forEach(btn => btn.disabled = true);
 
     current++;
@@ -291,4 +308,3 @@
 
 </body>
 </html>
-
