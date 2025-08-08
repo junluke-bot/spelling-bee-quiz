@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Spelling Bee Quiz 🐝</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 40px;
+      background: #fdf6e3;
+    }
+    h1 {
+      color: #333;
+    }
+    .card {
+      background: #fff9d6;
+      border: 2px solid #f0d000;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 20px auto;
+      max-width: 500px;
+    }
+    .choices {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .choice-btn {
+      background: #ffe770;
+      border: none;
+      border-radius: 5px;
+      padding: 10px 15px;
+      margin: 5px;
+      cursor: pointer;
+      width: 80%;
+      font-size: 16px;
+      transition: background 0.3s;
+    }
+    .choice-btn:hover {
+      background: #ffd000;
+    }
+    .feedback {
+      font-weight: bold;
+      margin-top: 15px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>🐝 Spelling Bee Quiz</h1>
+
+<div class="card">
+  <p id="definition"><strong>Definition:</strong> Loading...</p>
+  <div class="choices">
+    <button class="choice-btn" onclick="checkAnswer(this)"></button>
+    <button class="choice-btn" onclick="checkAnswer(this)"></button>
+    <button class="choice-btn" onclick="checkAnswer(this)"></button>
+    <button class="choice-btn" onclick="checkAnswer(this)"></button>
+  </div>
+  <p class="feedback" id="feedback"></p>
+</div>
+
+<p id="scoreText">Score: 0</p>
+
+<audio id="correctSound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
+<audio id="wrongSound" src="https://actions.google.com/sounds/v1/cartoon/cartoon_boing.ogg"></audio>
+
+<script>
+  const flashcards = [
+    ["Adventure", "An exciting or unusual experience"],
+    ["Ancient", "Very old; from a long time ago"],
+    ["Arrive", "To reach a place"],
+    ["Balance", "To stay steady and not fall"],
+    ["Brilliant", "Very bright or smart"],
+    ["Capture", "To catch or take control"],
+    ["Celebrate", "To do something special for an event"],
+    ["Clumsy", "Moving awkwardly or without grace"],
+    ["Compass", "A tool that shows direction"],
+    ["Confident", "Sure of oneself"],
+    ["Echo", "A sound that bounces back"],
+    ["Drowsy", "Feeling sleepy"],
+    ["Journey", "A trip from one place to another"],
+    ["Unique", "One of a kind; different from all others"],
+    ["Protect", "To keep safe from harm"],
+    ["Magnify", "To make something look bigger"]
+    ["Mischief", "Playful or naughty behavior"],
+    ["Neighbor", "Someone who lives near you"],
+    ["Notice", "To see or pay attention to"],
+    ["Opinion", "What someone thinks or believes"],
+    ["Pattern", "A repeated design or sequence"],
+    ["Patient", "Able to wait calmly"],
+    ["Pioneer", "A person who is one of the first to explore or settle"],
+    ["Prepare", "To get ready"],
+    ["Protect", "To keep safe from harm"],
+    ["Quality", "How good or bad something is"],
+    ["Quiver", "To shake slightly"],
+    ["Respect", "To show care and consideration"],
+    ["Reveal", "To show or make known"],
+    ["Seldom", "Not often"],
+    ["Silence", "Complete quiet"],
+    ["Solve", "To find the answer to a problem"],
+    ["Sparkle", "To shine with little flashes of light"],
+    ["Stumble", "To trip or almost fall"],
+    ["Tremble", "To shake because of fear or cold"],
+    ["Twinkle", "To shine with a flickering light"],
+    ["Unique", "One of a kind; different from all others"],
+    ["Valley", "A low area of land between hills"],
+    ["Victory", "Winning or success"],
+    ["Whisper", "To speak very quietly"],
+    ["Wilderness", "A wild, natural area with few people"],
+    ["Wonder", "To be curious or amazed"],
+    ["Yearn", "To want something very much"],
+    ["Ability", "Skill or power to do something"],
+    ["Absent", "Not present"],
+    ["Accept", "To agree to receive"],
+    ["Account", "A report or description"],
+    ["Accuse", "To say someone did something wrong"],
+    ["Across", "From one side to the other"],
+    ["Actor", "Someone who performs in plays or movies"],
+    ["Active", "Moving or doing things"],
+    ["Advice", "Helpful suggestion"],
+    ["Afraid", "Feeling fear"],
+    ["After", "Later in time"],
+    ["Agree", "To have the same opinion"],
+    ["Airplane", "A flying vehicle"],
+    ["Alive", "Living"],
+    ["Allow", "To let happen or give permission"],
+    ["Almost", "Nearly"],
+    ["Alone", "Without others"],
+    ["Along", "Moving beside or with"],
+    ["Always", "At all times"],
+    ["Amazing", "Very surprising or impressive"],
+    ["Amount", "How much or how many"],
+    ["Anger", "Feeling of being mad"],
+    ["Animal", "A living creature, not a plant"],
+    ["Answer", "To reply to a question"],
+    ["Appear", "To come into view"],
+    ["Area", "A particular space or region"],
+    ["Around", "On all sides"],
+    ["Ask", "To say you want to know or have something"],
+    ["Attend", "To be present at"],
+    ["Autumn", "The season after summer"],
+    ["Awake", "Not sleeping"],
+    ["Baby", "A very young child"],
+    ["Back", "The rear part"],
+    ["Bad", "Not good"],
+    ["Bag", "A container for carrying things"],
+    ["Ball", "A round object used in games"],
+    ["Band", "A group of musicians or a ring"],
+    ["Bank", "A place to keep money or the land beside a river"],
+    ["Base", "The bottom or foundation"],
+    ["Basic", "Simple or important"],
+    ["Basket", "A container made of woven material"],
+    ["Bat", "A flying mammal or a club used in sports"],
+    ["Bath", "To wash the body"],
+    ["Battle", "A fight between groups"],
+    ["Beach", "Sandy area next to water"],
+    ["Bear", "A large wild animal"],
+    ["Beat", "To hit repeatedly"],
+    ["Beautiful", "Very pretty"],
+    ["Because", "For the reason that"],
+    ["Become", "To begin to be"],
+    ["Bed", "Furniture for sleeping"],
+    ["Bee", "An insect that makes honey"],
+    ["Before", "Earlier than"],
+    ["Begin", "To start"],
+    ["Behind", "At the back of"],
+    ["Believe", "To accept as true"],
+    ["Bell", "A device that makes a ringing sound"],
+    ["Below", "Underneath"],
+    ["Best", "The highest quality or most excellent"],
+    ["Better", "More good"],
+    ["Between", "In the middle of two things"],
+    ["Beyond", "Further than"],
+    ["Big", "Large in size"],
+    ["Bird", "A creature with feathers and wings"],
+    ["Birthday", "The day someone was born"],
+    ["Black", "The darkest color"],
+    ["Blanket", "A warm cover for a bed"],
+    ["Blind", "Unable to see"],
+    ["Block", "A solid piece of material"],
+    ["Blood", "The red liquid in the body"],
+    ["Blow", "To send air moving"],
+    ["Blue", "A color like the sky"],
+    ["Boat", "A small vessel for water travel"],
+    ["Body", "The physical part of a person or animal"],
+    ["Bone", "The hard parts inside the body"],
+    ["Book", "A collection of written pages"],
+    ["Border", "The edge or boundary of a place"],
+    ["Born", "Coming to life"],
+    ["Borrow", "To take and return"],
+    ["Both", "The two together"],
+    ["Bottle", "A container for liquids"],
+    ["Bottom", "The lowest part"],
+    ["Box", "A container with sides and a lid"],
+    ["Boy", "A male child"],
+    ["Brain", "The organ inside the head used for thinking"],
+    ["Branch", "Part of a tree that grows from the trunk"],
+    ["Brave", "Showing courage"],
+    ["Bread", "Food made from flour"],
+    ["Break", "To separate into pieces"],
+    ["Bright", "Giving off light"],
+    ["Bring", "To carry or take to someone or somewhere"],
+    ["Brother", "A male sibling"],
+    ["Brown", "A color like chocolate"],
+    ["Build", "To make or construct"],
+    ["Busy", "Having a lot to do"],
+    ["Butter", "A soft yellow food made from milk"],
+    ["Buy", "To get something by paying money"],
+    ["By", "Near or next to"]
+    // Add more as needed
+  ];
+
+  let current = 0;
+  let score = 0;
+  let correctWord = "";
+  shuffle(flashcards);
+
+  function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+  }
+
+  function loadQuestion() {
+    if (current >= flashcards.length) {
+      document.querySelector(".card").style.display = "none";
+      document.getElementById("scoreText").innerText =
+        `🎉 Quiz Complete! Final Score: ${score} / ${flashcards.length}`;
+      return;
+    }
+
+    const currentFlashcard = flashcards[current];
+    correctWord = currentFlashcard[0];
+    const definition = currentFlashcard[1];
+
+    document.getElementById("definition").innerHTML =
+      `<strong>Definition:</strong> ${definition}`;
+    document.getElementById("feedback").textContent = "";
+
+    const buttons = document.querySelectorAll(".choice-btn");
+    const options = generateChoices(correctWord);
+
+    buttons.forEach((btn, i) => {
+      btn.innerText = options[i];
+      btn.disabled = false;
+      btn.style.background = "#ffe770";
+    });
+  }
+
+  function generateChoices(correct) {
+    const options = [correct];
+    while (options.length < 4) {
+      const random = flashcards[Math.floor(Math.random() * flashcards.length)][0];
+      if (!options.includes(random)) {
+        options.push(random);
+      }
+    }
+    return options.sort(() => 0.5 - Math.random()); // Shuffle options
+  }
+
+  function checkAnswer(button) {
+    const userChoice = button.innerText;
+    const correct = correctWord;
+
+    if (userChoice === correct) {
+      document.getElementById("feedback").textContent = "✅ Correct!";
+      document.getElementById("feedback").style.color = "green";
+      document.getElementById("correctSound").play();
+      score++;
+    } else {
+      document.getElementById("feedback").textContent = `❌ Wrong! Correct answer: ${correct}`;
+      document.getElementById("feedback").style.color = "red";
+      document.getElementById("wrongSound").play();
+    }
+
+    document.getElementById("scoreText").innerText = `Score: ${score}`;
+
+    // Disable all buttons after answer
+    document.querySelectorAll(".choice-btn").forEach(btn => btn.disabled = true);
+
+    current++;
+    setTimeout(loadQuestion, 2000);
+  }
+
+  loadQuestion();
+</script>
+
+</body>
+</html>
