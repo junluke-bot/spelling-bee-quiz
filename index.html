@@ -1,310 +1,311 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
 
-// === Spelling Bee Mode (All words: Two Bee 4th Grade 2025–2026) ===
-// Hear the definition (with TTS), then type the word. Tracks score, review misses,
-// choose a Set (1–5) or All 50 words, shuffle, hints, and restart.
-
-const WORDS = [
-  // 1–10
-  { word: "hesitate", pos: "verb", def: "to delay or pause typically for a moment" },
-  { word: "scorcher", pos: "noun", def: "something very hot" },
-  { word: "scavenger", pos: "noun", def: "an organism that typically feeds on refuse or carrion" },
-  { word: "fragments", pos: "plural noun", def: "parts broken off; imperfect or incomplete parts" },
-  { word: "deflated", pos: "verb", def: "released air or gas from" },
-  { word: "unleash", pos: "verb", def: "to let loose from control or restraint; to release" },
-  { word: "ration", pos: "noun", def: "the food allowance of one person or one animal for one day" },
-  { word: "cosmetics", pos: "plural noun", def: "preparations applied to the body for beautifying or caring for skin, hair, nails, lips, eyes, or teeth" },
-  { word: "crawdad", pos: "noun", def: "a small freshwater crustacean resembling a lobster" },
-  { word: "frustration", pos: "noun", def: "something that induces feelings of discouragement" },
-  // 11–20
-  { word: "unruly", pos: "adjective", def: "not readily ruled, disciplined, or managed; turbulent, uncontrollable" },
-  { word: "mascot", pos: "noun", def: "a cherished emblem or symbol of a group or institution" },
-  { word: "aroma", pos: "noun", def: "any smell or odor" },
-  { word: "moustache", aliases: ["mustache"], pos: "noun", def: "hair growing on the upper lip" },
-  { word: "artifacts", aliases: ["artefacts"], pos: "plural noun", def: "objects showing human workmanship, especially from a particular period" },
-  { word: "perfume", pos: "noun", def: "a fluid containing essences or synthetics used for its scent" },
-  { word: "sinister", pos: "adjective", def: "evil or suggestive of evil" },
-  { word: "tuxedo", pos: "noun", def: "semiformal evening clothing for men; typically a jacket, dress shirt, and cummerbund" },
-  { word: "discoveries", pos: "plural noun", def: "acts or instances of finding or finding out" },
-  { word: "lurches", pos: "verb", def: "moves unsteadily or in a series of stops and starts; staggers" },
-  // 21–30
-  { word: "language", pos: "noun", def: "the words and methods of combining them used and understood by a community" },
-  { word: "prognosis", pos: "noun", def: "the act or art of foretelling the course of a disease" },
-  { word: "Buffalo", pos: "geographical entry", def: "city and port on Lake Erie and the Niagara River in western New York" },
-  { word: "sequins", pos: "plural noun", def: "small shiny ornaments with a hole for sewing onto cloth" },
-  { word: "gallop", pos: "noun", def: "the natural 3‑beat gait of a horse" },
-  { word: "fabulous", pos: "adjective", def: "outstanding or remarkable especially in some pleasing quality" },
-  { word: "lanky", pos: "adjective", def: "tall, somewhat thin, and usually loose‑jointed" },
-  { word: "fluently", pos: "adverb", def: "in an easy, flowing, and graceful manner" },
-  { word: "mysterious", pos: "adjective", def: "difficult or impossible to understand; obscure" },
-  { word: "brandished", pos: "verb", def: "shook or waved (a weapon) menacingly" },
-  // 31–40
-  { word: "sardines", pos: "plural noun", def: "several small or immature fishes suitable for preserving for food" },
-  { word: "anguish", pos: "noun", def: "extreme pain or distress" },
-  { word: "conical", pos: "adjective", def: "cone‑shaped" },
-  { word: "rickety", pos: "adjective", def: "weak in the joints; tottering" },
-  { word: "lilt", pos: "noun", def: "a rhythmical swing, flow, or cadence" },
-  { word: "pediatric", pos: "adjective", def: "of or relating to the care and medical treatment of children" },
-  { word: "porridge", pos: "noun", def: "a soft food of legumes or grains boiled in water or milk until thick" },
-  { word: "democracy", pos: "noun", def: "government by the people; rule of the majority" },
-  { word: "rummage", pos: "verb", def: "to make a thorough search in; ransack" },
-  { word: "beige", pos: "adjective", def: "a light grayish‑yellowish brown color" },
-  // 41–50
-  { word: "ancestral", pos: "adjective", def: "of or belonging to one or more persons from whom one is descended" },
-  { word: "grimace", pos: "noun", def: "a deliberate or involuntary facial distortion expressing a feeling" },
-  { word: "gaunt", pos: "adjective", def: "thin and angular; attenuated especially by fasting or suffering" },
-  { word: "enormous", pos: "adjective", def: "extraordinarily great in size, number, degree, or significance" },
-  { word: "geranium", pos: "noun", def: "a plant of a widely distributed genus with regular flowers" },
-  { word: "nautical", pos: "adjective", def: "of, relating to, or associated with sailors, navigation, or ships" },
-  { word: "dubious", pos: "adjective", def: "questionable; open to doubt" },
-  { word: "ebony", pos: "adjective", def: "very dark or black in color" },
-  { word: "foreign", pos: "adjective", def: "from or characteristic of a place or country other than one's own; not native" },
-  { word: "paltry", pos: "adjective", def: "inferior, trashy, or worthless" },
-];
-
-const SETS = {
-  All: WORDS.map((_, i) => i),
-  "Set 1 (1–10)": Array.from({ length: 10 }, (_, i) => i),
-  "Set 2 (11–20)": Array.from({ length: 10 }, (_, i) => i + 10),
-  "Set 3 (21–30)": Array.from({ length: 10 }, (_, i) => i + 20),
-  "Set 4 (31–40)": Array.from({ length: 10 }, (_, i) => i + 30),
-  "Set 5 (41–50)": Array.from({ length: 10 }, (_, i) => i + 40),
-};
-
-function speak(text) {
-  const synth = typeof window !== "undefined" ? window.speechSynthesis : null;
-  if (!synth) return;
-  const utter = new SpeechSynthesisUtterance(text);
-  utter.rate = 0.95;
-  utter.pitch = 1.0;
-  synth.cancel();
-  synth.speak(utter);
-}
-
-function normalize(s) {
-  return (s || "")
-    .toLowerCase()
-    .normalize("NFKD")
-    .replace(/[^a-z]/g, "")
-    .trim();
-}
-
-function acceptedAnswers(entry) {
-  const base = [entry.word, ...(entry.aliases || [])];
-  return base.map(normalize);
-}
-
-export default function SpellingBeeAll() {
-  const [whichSet, setWhichSet] = useState("Set 1 (1–10)");
-  const [shuffle, setShuffle] = useState(true);
-  const [showPos, setShowPos] = useState(true);
-  const [index, setIndex] = useState(0);
-  const [input, setInput] = useState("");
-  const [revealed, setRevealed] = useState(false);
-  const [results, setResults] = useState([]); // {word, correct, guess}
-  const [started, setStarted] = useState(false);
-
-  const activeList = useMemo(() => SETS[whichSet].map((i) => ({ ...WORDS[i], id: i })), [whichSet]);
-
-  const items = useMemo(() => {
-    const arr = [...activeList];
-    if (!shuffle) return arr;
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Spelling Bee Quiz 🐝</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 40px;
+      background: #fdf6e3;
     }
-    return arr;
-  }, [activeList, shuffle, started]);
-
-  const current = items[index];
-  const inputRef = useRef(null);
-
-  useEffect(() => {
-    if (started && current) {
-      const toSay = `${current.def}. ${showPos ? `Part of speech: ${current.pos}. ` : ""}Type the correct spelling.`;
-      speak(toSay);
+    h1 {
+      color: #333;
     }
-  }, [started, index, whichSet, showPos]);
-
-  useEffect(() => {
-    if (started && inputRef.current) inputRef.current.focus();
-  }, [started, index]);
-
-  function checkAnswer() {
-    const ans = normalize(input);
-    const ok = acceptedAnswers(current).includes(ans);
-    setResults((r) => [...r, { word: current.word, correct: ok, guess: input }]);
-    setRevealed(true);
-  }
-
-  function nextItem() {
-    setRevealed(false);
-    setInput("");
-    if (index + 1 < items.length) {
-      setIndex(index + 1);
+    .card {
+      background: #fff9d6;
+      border: 2px solid #f0d000;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 20px auto;
+      max-width: 500px;
     }
+    .choices {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .choice-btn {
+      background: #ffe770;
+      border: none;
+      border-radius: 5px;
+      padding: 10px 15px;
+      margin: 5px;
+      cursor: pointer;
+      width: 80%;
+      font-size: 16px;
+      transition: background 0.3s;
+    }
+    .choice-btn:hover {
+      background: #ffd000;
+    }
+    .feedback {
+      font-weight: bold;
+      margin-top: 15px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>🐝 Spelling Bee Quiz</h1>
+
+<div class="card">
+  <p id="definition"><strong>Definition:</strong> Loading...</p>
+  <div class="choices">
+    <button class="choice-btn" onclick="checkAnswer(this)"></button>
+    <button class="choice-btn" onclick="checkAnswer(this)"></button>
+    <button class="choice-btn" onclick="checkAnswer(this)"></button>
+    <button class="choice-btn" onclick="checkAnswer(this)"></button>
+  </div>
+  <p class="feedback" id="feedback"></p>
+</div>
+
+<p id="scoreText">Score: 0</p>
+
+<audio id="correctSound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
+<audio id="wrongSound" src="https://actions.google.com/sounds/v1/cartoon/cartoon_boing.ogg"></audio>
+
+<script>
+  const allFlashcards = [
+    ["Adventure", "An exciting or unusual experience"],
+    ["Ancient", "Very old; from a long time ago"],
+    ["Arrive", "To reach a place"],
+    ["Balance", "To stay steady and not fall"],
+    ["Brilliant", "Very bright or smart"],
+    ["Capture", "To catch or take control"],
+    ["Celebrate", "To do something special for an event"],
+    ["Clumsy", "Moving awkwardly or without grace"],
+    ["Compass", "A tool that shows direction"],
+    ["Confident", "Sure of oneself"],
+    ["Echo", "A sound that bounces back"],
+    ["Drowsy", "Feeling sleepy"],
+    ["Journey", "A trip from one place to another"],
+    ["Unique", "One of a kind; different from all others"],
+    ["Protect", "To keep safe from harm"],
+    ["Magnify", "To make something look bigger"],
+    ["Mischief", "Playful or naughty behavior"],
+    ["Neighbor", "Someone who lives near you"],
+    ["Notice", "To see or pay attention to"],
+    ["Opinion", "What someone thinks or believes"],
+    ["Pattern", "A repeated design or sequence"],
+    ["Patient", "Able to wait calmly"],
+    ["Pioneer", "A person who is one of the first to explore or settle"],
+    ["Prepare", "To get ready"],
+    ["Protect", "To keep safe from harm"],
+    ["Quality", "How good or bad something is"],
+    ["Quiver", "To shake slightly"],
+    ["Respect", "To show care and consideration"],
+    ["Reveal", "To show or make known"],
+    ["Seldom", "Not often"],
+    ["Silence", "Complete quiet"],
+    ["Solve", "To find the answer to a problem"],
+    ["Sparkle", "To shine with little flashes of light"],
+    ["Stumble", "To trip or almost fall"],
+    ["Tremble", "To shake because of fear or cold"],
+    ["Twinkle", "To shine with a flickering light"],
+    ["Unique", "One of a kind; different from all others"],
+    ["Valley", "A low area of land between hills"],
+    ["Victory", "Winning or success"],
+    ["Whisper", "To speak very quietly"],
+    ["Wilderness", "A wild, natural area with few people"],
+    ["Wonder", "To be curious or amazed"],
+    ["Yearn", "To want something very much"],
+    ["Ability", "Skill or power to do something"],
+    ["Absent", "Not present"],
+    ["Accept", "To agree to receive"],
+    ["Account", "A report or description"],
+    ["Accuse", "To say someone did something wrong"],
+    ["Across", "From one side to the other"],
+    ["Actor", "Someone who performs in plays or movies"],
+    ["Active", "Moving or doing things"],
+    ["Advice", "Helpful suggestion"],
+    ["Afraid", "Feeling fear"],
+    ["After", "Later in time"],
+    ["Agree", "To have the same opinion"],
+    ["Airplane", "A flying vehicle"],
+    ["Alive", "Living"],
+    ["Allow", "To let happen or give permission"],
+    ["Almost", "Nearly"],
+    ["Alone", "Without others"],
+    ["Along", "Moving beside or with"],
+    ["Always", "At all times"],
+    ["Amazing", "Very surprising or impressive"],
+    ["Amount", "How much or how many"],
+    ["Anger", "Feeling of being mad"],
+    ["Animal", "A living creature, not a plant"],
+    ["Answer", "To reply to a question"],
+    ["Appear", "To come into view"],
+    ["Area", "A particular space or region"],
+    ["Around", "On all sides"],
+    ["Ask", "To say you want to know or have something"],
+    ["Attend", "To be present at"],
+    ["Autumn", "The season after summer"],
+    ["Awake", "Not sleeping"],
+    ["Baby", "A very young child"],
+    ["Back", "The rear part"],
+    ["Bad", "Not good"],
+    ["Bag", "A container for carrying things"],
+    ["Ball", "A round object used in games"],
+    ["Band", "A group of musicians or a ring"],
+    ["Bank", "A place to keep money or the land beside a river"],
+    ["Base", "The bottom or foundation"],
+    ["Basic", "Simple or important"],
+    ["Basket", "A container made of woven material"],
+    ["Bat", "A flying mammal or a club used in sports"],
+    ["Bath", "To wash the body"],
+    ["Battle", "A fight between groups"],
+    ["Beach", "Sandy area next to water"],
+    ["Bear", "A large wild animal"],
+    ["Beat", "To hit repeatedly"],
+    ["Beautiful", "Very pretty"],
+    ["Because", "For the reason that"],
+    ["Become", "To begin to be"],
+    ["Bed", "Furniture for sleeping"],
+    ["Bee", "An insect that makes honey"],
+    ["Before", "Earlier than"],
+    ["Begin", "To start"],
+    ["Behind", "At the back of"],
+    ["Believe", "To accept as true"],
+    ["Bell", "A device that makes a ringing sound"],
+    ["Below", "Underneath"],
+    ["Best", "The highest quality or most excellent"],
+    ["Better", "More good"],
+    ["Between", "In the middle of two things"],
+    ["Beyond", "Further than"],
+    ["Big", "Large in size"],
+    ["Bird", "A creature with feathers and wings"],
+    ["Birthday", "The day someone was born"],
+    ["Black", "The darkest color"],
+    ["Blanket", "A warm cover for a bed"],
+    ["Blind", "Unable to see"],
+    ["Block", "A solid piece of material"],
+    ["Blood", "The red liquid in the body"],
+    ["Blow", "To send air moving"],
+    ["Blue", "A color like the sky"],
+    ["Boat", "A small vessel for water travel"],
+    ["Body", "The physical part of a person or animal"],
+    ["Bone", "The hard parts inside the body"],
+    ["Book", "A collection of written pages"],
+    ["Border", "The edge or boundary of a place"],
+    ["Born", "Coming to life"],
+    ["Borrow", "To take and return"],
+    ["Both", "The two together"],
+    ["Bottle", "A container for liquids"],
+    ["Bottom", "The lowest part"],
+    ["Box", "A container with sides and a lid"],
+    ["Boy", "A male child"],
+    ["Brain", "The organ inside the head used for thinking"],
+    ["Branch", "Part of a tree that grows from the trunk"],
+    ["Brave", "Showing courage"],
+    ["Bread", "Food made from flour"],
+    ["Break", "To separate into pieces"],
+    ["Bright", "Giving off light"],
+    ["Bring", "To carry or take to someone or somewhere"],
+    ["Brother", "A male sibling"],
+    ["Brown", "A color like chocolate"],
+    ["Build", "To make or construct"],
+    ["Busy", "Having a lot to do"],
+    ["Butter", "A soft yellow food made from milk"],
+    ["Buy", "To get something by paying money"],
+    ["By", "Near or next to"]
+  ];
+
+  // Shuffle and pick 10 random questions
+  function getRandomQuizSet(array, count) {
+    const shuffled = [...array].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, count);
   }
 
-  function restart() {
-    setIndex(0);
-    setInput("");
-    setRevealed(false);
-    setResults([]);
-    setStarted(true);
+  const flashcards = getRandomQuizSet(allFlashcards, 10);
+
+  let current = 0;
+  let score = 0;
+  let correctWord = "";
+  let wrongAnswers = [];
+
+  function loadQuestion() {
+    if (current >= flashcards.length) {
+      document.querySelector(".card").style.display = "none";
+
+      let result = `🎉 Quiz Complete! Final Score: ${score} / ${flashcards.length}`;
+
+      if (wrongAnswers.length > 0) {
+        result += `<br><br>📝 You missed these words:<ul>`;
+        wrongAnswers.forEach(item => {
+          result += `<li><strong>${item.word}</strong>: ${item.definition} (You chose: "${item.chosen}")</li>`;
+        });
+        result += `</ul>`;
+      } else {
+        result += `<br><br>✅ Perfect! You got everything right!`;
+      }
+
+      document.getElementById("scoreText").innerHTML = result;
+      return;
+    }
+
+    const currentFlashcard = flashcards[current];
+    correctWord = currentFlashcard[0];
+    const definition = currentFlashcard[1];
+
+    document.getElementById("definition").innerHTML =
+      `<strong>Definition:</strong> ${definition}`;
+    document.getElementById("feedback").textContent = "";
+
+    const buttons = document.querySelectorAll(".choice-btn");
+    const options = generateChoices(correctWord);
+
+    buttons.forEach((btn, i) => {
+      btn.innerText = options[i];
+      btn.disabled = false;
+      btn.style.background = "#ffe770";
+    });
   }
 
-  function resetToNewSet(name) {
-    setWhichSet(name);
-    setStarted(false);
-    setIndex(0);
-    setInput("");
-    setRevealed(false);
-    setResults([]);
+  function generateChoices(correct) {
+    const options = [correct];
+    while (options.length < 4) {
+      const random = allFlashcards[Math.floor(Math.random() * allFlashcards.length)][0];
+      if (!options.includes(random)) {
+        options.push(random);
+      }
+    }
+    return options.sort(() => 0.5 - Math.random());
   }
 
-  const finished = results.length === items.length && items.length > 0;
-  const correctCount = results.filter((r) => r.correct).length;
+  function checkAnswer(button) {
+    const userChoice = button.innerText;
+    const correct = correctWord;
 
-  return (
-    <div className="min-h-screen w-full bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 p-6">
-      <div className="max-w-4xl mx-auto">
-        <header className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold">Spelling Bee Mode — Scripps Two Bee (4th Grade)</h1>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">Hear the definition, then type the word. Press Enter to check.</p>
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <select
-              className="px-3 py-2 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950"
-              value={whichSet}
-              onChange={(e) => resetToNewSet(e.target.value)}
-            >
-              {Object.keys(SETS).map((name) => (
-                <option key={name} value={name}>{name}</option>
-              ))}
-            </select>
-            <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" className="h-4 w-4" checked={shuffle} onChange={(e) => setShuffle(e.target.checked)} />
-              Shuffle
-            </label>
-            <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" className="h-4 w-4" checked={showPos} onChange={(e) => setShowPos(e.target.checked)} />
-              Show part of speech
-            </label>
-          </div>
-        </header>
+    if (userChoice === correct) {
+      document.getElementById("feedback").textContent = "✅ Correct!";
+      document.getElementById("feedback").style.color = "green";
+      document.getElementById("correctSound").play();
+      score++;
+    } else {
+      document.getElementById("feedback").textContent = `❌ Wrong! Correct answer: ${correct}`;
+      document.getElementById("feedback").style.color = "red";
+      document.getElementById("wrongSound").play();
 
-        {!started && (
-          <div className="bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
-            <h2 className="text-xl font-semibold mb-2">Ready, Jayden?</h2>
-            <p className="mb-4">This quiz includes <b>{SETS[whichSet].length}</b> word(s): choose a set above or select <b>All</b> to practice all 50.</p>
-            <button onClick={() => setStarted(true)} className="px-4 py-2 rounded-2xl bg-black text-white hover:opacity-90">Start Quiz</button>
-          </div>
-        )}
+      wrongAnswers.push({
+        word: correct,
+        definition: flashcards[current][1],
+        chosen: userChoice
+      });
+    }
 
-        {started && !finished && current && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="text-sm">Word {index + 1} / {items.length}</div>
-              <div className="text-sm">Score: {results.filter(r=>r.correct).length} ✓</div>
-            </div>
+    document.getElementById("scoreText").innerText = `Score: ${score}`;
 
-            <div className="bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
-              <div className="flex flex-wrap items-center gap-3 mb-3">
-                <button
-                  onClick={() => speak(`${current.def}. ${showPos ? `Part of speech: ${current.pos}.` : ""} Type the correct spelling.`)}
-                  className="px-3 py-1.5 rounded-xl border border-zinc-300 dark:border-zinc-700"
-                >🔊 Play definition</button>
-                <button onClick={() => speak(current.word)} className="px-3 py-1.5 rounded-xl border border-zinc-300 dark:border-zinc-700">👂 Say the word</button>
-              </div>
+    document.querySelectorAll(".choice-btn").forEach(btn => btn.disabled = true);
 
-              <p className="text-base leading-relaxed">
-                <span className="font-semibold">Definition:</span> {current.def} {showPos && <span className="text-zinc-500">({current.pos})</span>}
-              </p>
+    current++;
+    setTimeout(loadQuestion, 2000);
+  }
 
-              <div className="mt-4">
-                <input
-                  ref={inputRef}
-                  type="text"
-                  placeholder="Type the word here"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !revealed) checkAnswer();
-                    if (e.key === "Enter" && revealed) nextItem();
-                  }}
-                  className="w-full p-3 rounded-2xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950"
-                />
-                <div className="flex gap-2 mt-3">
-                  {!revealed ? (
-                    <>
-                      <button onClick={checkAnswer} className="px-4 py-2 rounded-2xl bg-emerald-600 text-white hover:opacity-95">Check</button>
-                      <button
-                        onClick={() => {
-                          const first = current.word[0];
-                          const last = current.word[current.word.length - 1];
-                          speak(`Hint: the first letter is ${first}. The word ends with ${last}.`);
-                        }}
-                        className="px-4 py-2 rounded-2xl border border-zinc-300 dark:border-zinc-700"
-                      >Give a hint</button>
-                    </>
-                  ) : (
-                    <button onClick={nextItem} className="px-4 py-2 rounded-2xl bg-black text-white hover:opacity-90">Next</button>
-                  )}
-                  <button
-                    onClick={() => {
-                      setRevealed(true);
-                      setResults((r) => [...r, { word: current.word, correct: false, guess: input || "(skipped)" }]);
-                    }}
-                    className="px-4 py-2 rounded-2xl border border-zinc-300 dark:border-zinc-700"
-                  >Skip</button>
-                </div>
+  loadQuestion();
+</script>
 
-                {revealed && (
-                  <div className="mt-4">
-                    {acceptedAnswers(current).includes(normalize(input)) ? (
-                      <div className="rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 p-3">✅ Correct! <span className="font-semibold">{current.word}</span></div>
-                    ) : (
-                      <div className="rounded-xl bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 p-3">❌ Not quite. The correct spelling is <span className="font-semibold">{current.word}</span>{current.aliases ? ` (also accepted: ${current.aliases.join(", ")})` : ""}.</div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between text-sm text-zinc-600 dark:text-zinc-400">
-              <div>Tip: press <kbd className="px-1 py-0.5 rounded-md border">Enter</kbd> to check/continue.</div>
-              <button onClick={restart} className="underline">Restart set</button>
-            </div>
-          </div>
-        )}
-
-        {started && finished && (
-          <div className="bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
-            <h2 className="text-xl font-semibold mb-2">Great work, Jayden! 🎉</h2>
-            <p className="mb-4">You scored <b>{correctCount}</b> out of <b>{items.length}</b>.</p>
-            <div className="mb-4 flex gap-2">
-              <button onClick={restart} className="px-4 py-2 rounded-2xl bg-black text-white hover:opacity-90">Try again</button>
-              <button onClick={() => { setStarted(false); setResults([]); setIndex(0); }} className="px-4 py-2 rounded-2xl border border-zinc-300 dark:border-zinc-700">Change set</button>
-            </div>
-            <h3 className="font-semibold mb-2">Review</h3>
-            <ul className="space-y-2">
-              {results.map((r, i) => (
-                <li key={i} className="flex items-center justify-between gap-3 border border-zinc-200 dark:border-zinc-800 rounded-xl p-3">
-                  <div>
-                    <div className="font-medium">{r.word}</div>
-                    <div className="text-xs text-zinc-600 dark:text-zinc-400">{WORDS.find((w) => w.word === r.word)?.def}</div>
-                  </div>
-                  <div className="text-sm">{r.correct ? (<span className="text-emerald-600">✓ Correct</span>) : (<span className="text-rose-600">✗ Your answer: {r.guess}</span>)}</div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        <footer className="mt-8 text-xs text-zinc-500">Scripps Two Bee (4th grade, 2025–2026). Sets: 1–5 of 10 words each, or All 50. Variants accepted for <i>moustache/mustache</i> and <i>artifacts/artefacts</i>.</footer>
-      </div>
-    </div>
-  );
-}
-
+</body>
+</html>
