@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Spelling Bee — Jayden</title>
   <style>
-    /* Colorful animated gradient background + dark mode */
     :root{--text:#111827;--muted:#6b7280;--card:#ffffffcc;--border:#e5e7eb}
     @media (prefers-color-scheme: dark){:root{--text:#fafafa;--muted:#9ca3af;--card:#0c0c0ccc;--border:#262626}}
     html,body{margin:0;height:100%;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;color:var(--text)}
@@ -18,15 +17,16 @@
     .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:12px 0 20px}
     select,button,input[type=text]{border:1px solid var(--border);background:#ffffffd9;color:inherit;border-radius:14px;padding:10px 12px;font-size:16px;backdrop-filter:saturate(120%) blur(4px)}
     @media (prefers-color-scheme: dark){select,button,input[type=text]{background:#0b0b0bd9}}
-    button.primary{background:#111111;color:#fff;border-color:#111111}
+    button.primary{background:#111111;color:#fff;border-color:#111111;cursor:pointer}
+    button{cursor:pointer}
     .card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.12);backdrop-filter:saturate(150%) blur(6px)}
-    .row{display:flex;justify-content:space-between;align-items:center}
+    .row{display:flex;justify-content:space-between;align-items:center;gap:10px}
     .hint{font-size:14px}
     .ok{color:#059669}.okbg{background:#ecfdf5;border-color:rgba(16,185,129,.25)}
     .err{color:#dc2626}.errbg{background:#fef2f2;border-color:rgba(239,68,68,.25)}
     @media (prefers-color-scheme: dark){.okbg{background:rgba(6,78,59,.25)}.errbg{background:rgba(127,29,29,.25)}}
     .review{display:grid;gap:10px}
-    kbd{border:1px solid var(--border);border-radius:6px;padding:2px 6px}
+    kbd{border:1px solid var(--border);border-radius:6px;padding:2px 6px;font-size:11px}
     .footer{color:var(--muted);font-size:12px;margin-top:16px}
     .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
     .score{font-size:14px}
@@ -63,93 +63,381 @@
         </ul>
       </div>
     </main>
-    <div class="footer">Variants accepted: <i>moustache/mustache</i>, <i>artifacts/artefacts</i>. Built for Jayden 🐝</div>
+    <div class="footer">Built for Jayden 🐝 — practice anytime, anywhere.</div>
   </div>
+
 <script>
+// ================= WORD LIST =================
+// Your original words (sample) + merged 273–450 list.
+// You can edit/add entries freely. Format:
+// { w:"word", p:"part of speech", d:"kid-friendly definition", a:["alt1","alt2"] }
+
 const WORDS = [
-  { w:"hesitate", p:"verb", d:"to delay or pause typically for a moment" },
-  { w:"scorcher", p:"noun", d:"something very hot" },
-  { w:"scavenger", p:"noun", d:"an organism that typically feeds on refuse or carrion" },
-  { w:"fragments", p:"plural noun", d:"parts broken off; imperfect or incomplete parts" },
-  { w:"deflated", p:"verb", d:"released air or gas from" },
-  { w:"unleash", p:"verb", d:"to let loose from control or restraint; to release" },
-  { w:"ration", p:"noun", d:"the food allowance of one person or one animal for one day" },
-  { w:"cosmetics", p:"plural noun", d:"preparations applied to the body for beautifying or caring for skin, hair, nails, lips, eyes, or teeth" },
-  { w:"crawdad", p:"noun", d:"a small freshwater crustacean resembling a lobster" },
-  { w:"frustration", p:"noun", d:"something that induces feelings of discouragement" },
-  { w:"unruly", p:"adjective", d:"not readily ruled, disciplined, or managed; turbulent, uncontrollable" },
-  { w:"mascot", p:"noun", d:"a cherished emblem or symbol of a group or institution" },
-  { w:"aroma", p:"noun", d:"any smell or odor" },
-  { w:"moustache", a:["mustache"], p:"noun", d:"hair growing on the upper lip" },
-  { w:"artifacts", a:["artefacts"], p:"plural noun", d:"objects showing human workmanship, especially from a particular period" },
-  { w:"perfume", p:"noun", d:"a fluid containing essences or synthetics used for its scent" },
-  { w:"sinister", p:"adjective", d:"evil or suggestive of evil" },
-  { w:"tuxedo", p:"noun", d:"semiformal evening clothing for men; typically a jacket, dress shirt, and cummerbund" },
-  { w:"discoveries", p:"plural noun", d:"acts or instances of finding or finding out" },
-  { w:"lurches", p:"verb", d:"moves unsteadily or in a series of stops and starts; staggers" },
-  { w:"language", p:"noun", d:"the words and methods of combining them used and understood by a community" },
-  { w:"prognosis", p:"noun", d:"the act or art of foretelling the course of a disease" },
-  { w:"Buffalo", p:"geographical entry", d:"city and port on Lake Erie and the Niagara River in western New York" },
-  { w:"sequins", p:"plural noun", d:"small shiny ornaments with a hole for sewing onto cloth" },
-  { w:"gallop", p:"noun", d:"the natural 3‑beat gait of a horse" },
-  { w:"fabulous", p:"adjective", d:"outstanding or remarkable especially in some pleasing quality" },
-  { w:"lanky", p:"adjective", d:"tall, somewhat thin, and usually loose‑jointed" },
-  { w:"fluently", p:"adverb", d:"in an easy, flowing, and graceful manner" },
-  { w:"mysterious", p:"adjective", d:"difficult or impossible to understand; obscure" },
-  { w:"brandished", p:"verb", d:"shook or waved (a weapon) menacingly" },
-  { w:"sardines", p:"plural noun", d:"several small or immature fishes suitable for preserving for food" },
-  { w:"anguish", p:"noun", d:"extreme pain or distress" },
-  { w:"conical", p:"adjective", d:"cone‑shaped" },
-  { w:"rickety", p:"adjective", d:"weak in the joints; tottering" },
-  { w:"lilt", p:"noun", d:"a rhythmical swing, flow, or cadence" },
-  { w:"pediatric", p:"adjective", d:"of or relating to the care and medical treatment of children" },
-  { w:"porridge", p:"noun", d:"a soft food of legumes or grains boiled in water or milk until thick" },
-  { w:"democracy", p:"noun", d:"government by the people; rule of the majority" },
-  { w:"rummage", p:"verb", d:"to make a thorough search in; ransack" },
-  { w:"beige", p:"adjective", d:"a light grayish‑yellowish brown color" },
-  { w:"ancestral", p:"adjective", d:"of or belonging to one or more persons from whom one is descended" },
-  { w:"grimace", p:"noun", d:"a deliberate or involuntary facial distortion expressing a feeling" },
-  { w:"gaunt", p:"adjective", d:"thin and angular; attenuated especially by fasting or suffering" },
-  { w:"enormous", p:"adjective", d:"extraordinarily great in size, number, degree, or significance" },
-  { w:"geranium", p:"noun", d:"a plant of a widely distributed genus with regular flowers" },
-  { w:"nautical", p:"adjective", d:"of, relating to, or associated with sailors, navigation, or ships" },
-  { w:"dubious", p:"adjective", d:"questionable; open to doubt" },
-  { w:"ebony", p:"adjective", d:"very dark or black in color" },
-  { w:"foreign", p:"adjective", d:"from or characteristic of a place or country other than one's own; not native" },
-  { w:"paltry", p:"adjective", d:"inferior, trashy, or worthless" },
+  { w:"hesitate", p:"verb", d:"to delay or pause typically for a moment." },
+  { w:"scorcher", p:"noun", d:"something that is very hot." },
+  { w:"scavenger", p:"noun", d:"an animal that feeds on dead or discarded material." },
+  { w:"fragments", p:"plural noun", d:"broken or incomplete parts." },
+  { w:"deflated", p:"verb", d:"let the air or gas out of something." },
+  { w:"unleash", p:"verb", d:"to release from restraint." },
+  { w:"ration", p:"noun", d:"a fixed portion of food or supplies." },
+  { w:"cosmetics", p:"plural noun", d:"products applied to the body to improve appearance." },
+  { w:"crawdad", p:"noun", d:"a small freshwater crustacean; crayfish." },
+  { w:"frustration", p:"noun", d:"the feeling of being upset or annoyed because you cannot do something." },
+  { w:"unruly", p:"adjective", d:"hard to control; disorderly." },
+  { w:"mascot", p:"noun", d:"a person, animal, or thing that is a symbol for a group." },
+  { w:"aroma", p:"noun", d:"a pleasant smell." },
+  { w:"moustache", a:["mustache"], p:"noun", d:"hair growing on the upper lip." },
+  { w:"artifacts", a:["artefacts"], p:"plural noun", d:"objects made by humans, often of historical interest." },
+  { w:"perfume", p:"noun", d:"a liquid with a pleasant smell worn on the body." },
+  { w:"sinister", p:"adjective", d:"suggesting evil or harm." },
+  { w:"tuxedo", p:"noun", d:"a formal suit for men." },
+  { w:"discoveries", p:"plural noun", d:"things that are found or learned for the first time." },
+  { w:"lurches", p:"verb", d:"moves suddenly and unsteadily." },
+  { w:"language", p:"noun", d:"a system of words and their use by a people." },
+  { w:"prognosis", p:"noun", d:"a prediction of how a disease will develop." },
+  { w:"Buffalo", p:"geographical entry", d:"a city in western New York." },
+  { w:"sequins", p:"plural noun", d:"small shiny discs used to decorate clothing." },
+  { w:"gallop", p:"noun", d:"a fast run of a horse." },
+  { w:"fabulous", p:"adjective", d:"wonderful; excellent." },
+  { w:"lanky", p:"adjective", d:"tall and thin in an awkward way." },
+  { w:"fluently", p:"adverb", d:"smoothly and easily." },
+  { w:"mysterious", p:"adjective", d:"hard to understand or explain." },
+  { w:"brandished", p:"verb", d:"waved something, especially a weapon, in a threatening way." },
+  { w:"sardines", p:"plural noun", d:"small fish often packed in cans." },
+  { w:"anguish", p:"noun", d:"severe mental or physical pain." },
+  { w:"conical", p:"adjective", d:"shaped like a cone." },
+  { w:"rickety", p:"adjective", d:"likely to fall apart; unstable." },
+  { w:"lilt", p:"noun", d:"a light, springy rhythm or tone." },
+  { w:"pediatric", p:"adjective", d:"relating to medical care of children." },
+  { w:"porridge", p:"noun", d:"a soft food made by boiling grains in water or milk." },
+  { w:"democracy", p:"noun", d:"government by the people." },
+  { w:"rummage", p:"verb", d:"to search through in a disorderly way." },
+  { w:"beige", p:"adjective", d:"light brown color." },
+  { w:"ancestral", p:"adjective", d:"relating to family members from long ago." },
+  { w:"grimace", p:"noun", d:"a twisted expression showing dislike or pain." },
+  { w:"gaunt", p:"adjective", d:"very thin and bony." },
+  { w:"enormous", p:"adjective", d:"very large." },
+  { w:"geranium", p:"noun", d:"a garden plant with rounded leaves and bright flowers." },
+  { w:"nautical", p:"adjective", d:"related to ships or sailing." },
+  { w:"dubious", p:"adjective", d:"doubtful or unsure." },
+  { w:"ebony", p:"adjective", d:"very dark; black." },
+  { w:"foreign", p:"adjective", d:"from another country." },
+  { w:"paltry", p:"adjective", d:"small and not important; worthless." },
+
+  /* === merged 273–450 list (shortened explanations) === */
+  { w:"plaited", p:"adjective", d:"braided; interwoven." },
+  { w:"monsieur", p:"noun", d:"the French title equivalent to 'Mr.'; mister." },
+  { w:"manticores", p:"plural noun", d:"mythical beasts with a human head and lion body." },
+  { w:"prestigious", p:"adjective", d:"having a high reputation; honored." },
+  { w:"fraidycat", p:"noun", d:"a person who is easily scared." },
+  { w:"guttural", p:"adjective", d:"produced in the throat." },
+  { w:"lo mein", p:"noun", d:"a Chinese stir-fried noodle dish." },
+  { w:"courier", p:"noun", d:"a messenger who transports packages or information." },
+  { w:"sans serif", p:"noun", d:"a style of type without small finishing strokes." },
+  { w:"psyche", p:"noun", d:"the mind or personality." },
+  { w:"stucco", p:"noun", d:"plaster used on walls." },
+  { w:"Frankenstein", p:"noun", d:"something that harms its creator." },
+  { w:"schema", p:"noun", d:"an outline, diagram, or plan." },
+  { w:"et cetera", p:"noun", d:"and other similar things; and so on." },
+  { w:"vidimus", p:"noun", d:"an attested copy of a document." },
+  { w:"delphine", p:"adjective", d:"relating to certain toothed whales." },
+  { w:"slough", p:"noun", d:"a swampy place; a state of deep sadness." },
+  { w:"archipelago", p:"noun", d:"a group of islands." },
+  { w:"serape", p:"noun", d:"a colorful shawl or blanket worn as a cloak." },
+
+  { w:"puissance", p:"noun", d:"power; strength." },
+  { w:"pinioning", p:"verb", d:"binding or restraining the arms or wings." },
+  { w:"chignon", p:"noun", d:"a knot of hair at the back of the head." },
+  { w:"pheromone", p:"noun", d:"a chemical signal affecting other animals of the same species." },
+  { w:"galleon", p:"noun", d:"a large sailing ship from the 1500s–1700s." },
+  { w:"magnanimous", p:"adjective", d:"very generous, especially to a rival." },
+  { w:"chartreuse", p:"noun", d:"a bright yellow-green color." },
+  { w:"wainscoting", p:"noun", d:"wood paneling on the lower part of a wall." },
+  { w:"Nehru", p:"noun", d:"a hip-length jacket with a stand-up collar." },
+  { w:"gangly", p:"adjective", d:"tall, thin, and awkward." },
+  { w:"swaggering", p:"adjective", d:"walking or acting in a bold, showy way." },
+  { w:"chimneys", p:"plural noun", d:"structures that carry smoke outside." },
+  { w:"riveted", p:"adjective", d:"fastened firmly; also, completely fascinated." },
+  { w:"plaid", p:"adjective", d:"having a crossed stripe pattern." },
+  { w:"dirge", p:"noun", d:"a funeral or mourning song." },
+  { w:"zeal", p:"noun", d:"great enthusiasm." },
+  { w:"whittled", p:"verb", d:"carved by cutting off small pieces." },
+  { w:"depots", p:"plural noun", d:"stations or warehouses." },
+  { w:"fiberglass", p:"noun", d:"glass in fibrous form used in products." },
+
+  { w:"salvaged", p:"verb", d:"rescued from loss or damage." },
+  { w:"fissures", p:"plural noun", d:"narrow openings or cracks." },
+  { w:"enthusiastic", p:"adjective", d:"very excited and interested." },
+  { w:"discipline", p:"noun", d:"controlled behavior; a field of study." },
+  { w:"unfamiliar", p:"adjective", d:"not known; strange." },
+  { w:"scurrying", p:"verb", d:"moving quickly with short steps." },
+  { w:"dignitaries", p:"plural noun", d:"people of high rank." },
+  { w:"pizzeria", p:"noun", d:"a restaurant that sells pizza." },
+  { w:"dismissal", p:"noun", d:"removal from a job or position." },
+  { w:"skittish", p:"adjective", d:"easily scared; jumpy." },
+  { w:"careened", p:"verb", d:"tilted or swayed wildly." },
+  { w:"nomination", p:"noun", d:"proposing someone for an honor or job." },
+  { w:"opportunist", p:"noun", d:"one who takes selfish advantage of situations." },
+  { w:"dictatorship", p:"noun", d:"rule by one person with total power." },
+  { w:"comrades", p:"plural noun", d:"close companions." },
+  { w:"sporadic", p:"adjective", d:"irregular; occurring here and there." },
+  { w:"promenade", p:"noun", d:"a leisurely walk in a public place." },
+  { w:"repugnant", p:"adjective", d:"very offensive or disgusting." },
+  { w:"invincible", p:"adjective", d:"impossible to defeat." },
+
+  { w:"renowned", p:"adjective", d:"widely known; famous." },
+  { w:"parachute", p:"noun", d:"a device for slowing a fall." },
+  { w:"laborious", p:"adjective", d:"requiring hard work." },
+  { w:"appointment", p:"noun", d:"an arranged meeting." },
+  { w:"foreseeable", p:"adjective", d:"able to be predicted." },
+  { w:"ratify", p:"verb", d:"to officially approve." },
+  { w:"scalpel", p:"noun", d:"a small sharp surgical knife." },
+  { w:"reclusive", p:"adjective", d:"avoiding other people; solitary." },
+  { w:"compassionate", p:"adjective", d:"showing care for others' suffering." },
+  { w:"bulletin", p:"noun", d:"a brief news announcement." },
+  { w:"alfalfa", p:"noun", d:"a plant used as animal feed." },
+  { w:"officially", p:"adverb", d:"formally; with authority." },
+  { w:"crematorium", p:"noun", d:"a place where bodies are cremated." },
+  { w:"bayonet", p:"noun", d:"a blade attached to a rifle." },
+  { w:"amicable", p:"adjective", d:"friendly; peaceful." },
+  { w:"exuberant", p:"adjective", d:"full of excitement and energy." },
+  { w:"beautician", p:"noun", d:"a person who does beauty treatments." },
+  { w:"equations", p:"plural noun", d:"math statements showing equality." },
+  { w:"assignment", p:"noun", d:"a task given to someone." },
+
+  { w:"ultimatum", p:"noun", d:"a final demand with consequences." },
+  { w:"whinnying", p:"verb", d:"neighing softly, like a horse." },
+  { w:"squalor", p:"noun", d:"very dirty, unpleasant conditions." },
+  { w:"memoirs", p:"plural noun", d:"written accounts of a person's own life." },
+  { w:"cylinders", p:"plural noun", d:"objects shaped like cans or tubes." },
+  { w:"ominous", p:"adjective", d:"suggesting something bad is coming." },
+  { w:"muffler", p:"noun", d:"a device that reduces noise from an engine." },
+  { w:"syndrome", p:"noun", d:"a set of signs and symptoms." },
+  { w:"premises", p:"plural noun", d:"a building and its land." },
+  { w:"safari", p:"noun", d:"a trip to see animals, especially in Africa." },
+  { w:"lasagna", p:"noun", d:"a layered pasta dish." },
+  { w:"substantially", p:"adverb", d:"to a large degree." },
+  { w:"mercantile", p:"adjective", d:"related to trade." },
+  { w:"formidable", p:"adjective", d:"inspiring fear or respect." },
+  { w:"propaganda", p:"noun", d:"information used to influence opinions." },
+  { w:"marquee", p:"adjective", d:"leading; top-billed." },
+  { w:"proficient", p:"adjective", d:"skilled at something." },
+  { w:"compunction", p:"noun", d:"a feeling of guilt." },
+  { w:"emphatically", p:"adverb", d:"in a forceful way." },
+
+  { w:"hyperventilated", p:"verb", d:"breathed too quickly and deeply." },
+  { w:"ostracism", p:"noun", d:"exclusion from a group." },
+  { w:"onslaught", p:"noun", d:"a fierce attack." },
+  { w:"ruefully", p:"adverb", d:"with regret." },
+  { w:"misanthrope", p:"noun", d:"a person who dislikes people." },
+  { w:"prototype", p:"noun", d:"the first model of something." },
+  { w:"cravenly", p:"adverb", d:"in a very cowardly way." },
+  { w:"mulberry", p:"noun", d:"a dark purple berry." },
+  { w:"hypocritical", p:"adjective", d:"pretending to be better than one is." },
+  { w:"chlorine", p:"noun", d:"a greenish gas used as a disinfectant." },
+  { w:"traumatic", p:"adjective", d:"emotionally or physically shocking." },
+  { w:"receipts", p:"plural noun", d:"written records of money or goods received." },
+  { w:"solemnly", p:"adverb", d:"seriously and respectfully." },
+  { w:"begrudge", p:"verb", d:"to give or allow unwillingly." },
+  { w:"contentious", p:"adjective", d:"argumentative; quarrelsome." },
+  { w:"precocious", p:"adjective", d:"showing mature abilities at a young age." },
+  { w:"ensemble", p:"noun", d:"a group that performs together." },
+  { w:"cadre", p:"noun", d:"a small group trained for a special purpose." },
+  { w:"lye", p:"noun", d:"a strong chemical used in cleaning and soap." },
+
+  { w:"belfry", p:"noun", d:"a tower for bells." },
+  { w:"lacrosse", p:"noun", d:"a sport played with sticks and a ball." },
+  { w:"sluice", p:"noun", d:"a channel with a gate for controlling water." },
+  { w:"cajolery", p:"noun", d:"flattering talk used to persuade." },
+  { w:"vigilance", p:"noun", d:"careful watchfulness." },
+  { w:"residuals", p:"plural noun", d:"payments for repeated use of work." },
+  { w:"boutique", p:"noun", d:"a small, specialized shop." },
+  { w:"peroxide", p:"noun", d:"a chemical used for bleaching or disinfecting." },
+  { w:"aristocracy", p:"noun", d:"the highest social class." },
+  { w:"apocalypse", p:"noun", d:"a great, disastrous event." },
+  { w:"tuberculosis", p:"noun", d:"a serious lung disease." },
+  { w:"barricade", p:"noun", d:"a barrier blocking a passage." },
+  { w:"confreres", p:"plural noun", d:"colleagues or comrades." },
+  { w:"anonymously", p:"adverb", d:"without a name being given." },
+  { w:"unparalleled", p:"adjective", d:"having no equal." },
+  { w:"barrette", p:"noun", d:"a small hair clip." },
+  { w:"chassis", p:"noun", d:"the frame of a vehicle." },
+  { w:"junket", p:"noun", d:"a trip, often for pleasure at another's expense." },
+  { w:"quandary", p:"noun", d:"a state of uncertainty." },
+
+  { w:"Erie", p:"geographical entry", d:"a city on Lake Erie in Pennsylvania." },
+  { w:"gingham", p:"noun", d:"a checked cotton fabric." },
+  { w:"silhouette", p:"noun", d:"a dark outline of a shape." },
+  { w:"auxiliary", p:"adjective", d:"providing extra help or support." },
+  { w:"thesaurus", p:"noun", d:"a reference of words and synonyms." },
+  { w:"patriarchs", p:"plural noun", d:"male heads of families." },
+  { w:"chandelier", p:"noun", d:"a decorative hanging light." },
+  { w:"dulce", p:"noun", d:"a sweet or candy." },
+  { w:"concierge", p:"noun", d:"a person who assists guests or residents." },
+  { w:"latticework", p:"noun", d:"crisscrossed strips forming an open pattern." },
+  { w:"hibiscus", p:"noun", d:"a plant with large flowers." },
+  { w:"tamale", p:"noun", d:"corn dough with filling, steamed in a husk." },
+  { w:"maracas", p:"plural noun", d:"rattles used as instruments." },
+  { w:"gyroplane", p:"noun", d:"an aircraft with freely rotating blades." },
+  { w:"burpees", p:"plural noun", d:"a full-body exercise with squat, plank, and jump." },
+  { w:"Adriatic", p:"adjective", d:"relating to the sea east of Italy." },
+  { w:"piccolo", p:"noun", d:"a small high-pitched flute." },
+  { w:"au revoir", p:"noun", d:"goodbye in French." },
+  { w:"tulle", p:"noun", d:"fine net fabric used in veils." },
+
+  { w:"boll weevil", p:"noun", d:"a beetle that damages cotton." },
+  { w:"camphor", p:"noun", d:"a fragrant substance used in medicine and repellents." },
+  { w:"Tucson", p:"geographical entry", d:"a city in southern Arizona." },
+  { w:"paparazzi", p:"plural noun", d:"photographers who chase celebrities." },
+  { w:"pumpernickel", p:"noun", d:"a dark, dense bread." },
+  { w:"pogrom", p:"noun", d:"an organized violent attack on a minority group." },
+  { w:"bursitis", p:"noun", d:"inflammation of a joint sac." },
+  { w:"patisserie", p:"noun", d:"a pastry shop." },
+  { w:"cycads", p:"plural noun", d:"tropical plants that look like palms." },
+  { w:"sarsaparilla", p:"noun", d:"a sweet soft drink." },
+  { w:"maitre d'", p:"noun", d:"the headwaiter in a restaurant." },
+  { w:"cannelloni", p:"noun", d:"stuffed pasta tubes." },
+  { w:"boulangerie", p:"noun", d:"a bakery, especially for bread." },
+  { w:"bronchitis", p:"noun", d:"inflammation of air passages in the lungs." },
+  { w:"Oswego", p:"geographical entry", d:"a city on Lake Ontario in New York." },
+  { w:"diphtheria", p:"noun", d:"a serious throat infection." },
+  { w:"baklava", p:"noun", d:"a sweet pastry with nuts and syrup." },
+  { w:"corbels", p:"plural noun", d:"supports sticking out from a wall." },
+  { w:"trebuchets", p:"plural noun", d:"medieval stone-throwing machines." },
+  { w:"Kilimanjaro", p:"geographical entry", d:"the highest mountain in Africa." },
+  { w:"fraulein", p:"noun", d:"a young unmarried woman in Germany." },
+  { w:"protege", p:"noun", d:"a person guided by a mentor." },
+  { w:"hors d'oeuvres", p:"plural noun", d:"small appetizers before a meal." },
+  { w:"maquisards", p:"plural noun", d:"French resistance fighters in WWII." },
+  { w:"Aubusson", p:"noun", d:"a type of French tapestry or rug." },
+  { w:"Charolais", p:"noun", d:"a French breed of beef cattle." }
 ];
-const SETS = {
-  "All (1–50)": [...Array(50)].map((_,i)=>i),
-  "Set 1 (1–10)": Array.from({length:10},(_,i)=>i),
-  "Set 2 (11–20)": Array.from({length:10},(_,i)=>i+10),
-  "Set 3 (21–30)": Array.from({length:10},(_,i)=>i+20),
-  "Set 4 (31–40)": Array.from({length:10},(_,i)=>i+30),
-  "Set 5 (41–50)": Array.from({length:10},(_,i)=>i+40),
+
+// ================= AUTO SETS =================
+function buildSets() {
+  const sets = {};
+  const total = WORDS.length;
+
+  sets[`All words (1–${total})`] =
+    Array.from({ length: total }, (_, i) => i);
+
+  const ORIGINAL_COUNT = 50;
+  if (total >= ORIGINAL_COUNT) {
+    sets[`Original (1–${ORIGINAL_COUNT})`] =
+      Array.from({ length: ORIGINAL_COUNT }, (_, i) => i);
+  }
+  if (total > ORIGINAL_COUNT) {
+    sets[`New words (${ORIGINAL_COUNT + 1}–${total})`] =
+      Array.from({ length: total - ORIGINAL_COUNT }, (_, i) => ORIGINAL_COUNT + i);
+  }
+
+  const blockSize = 25;
+  let block = 1;
+  for (let start = 0; start < total; start += blockSize) {
+    const end = Math.min(total, start + blockSize);
+    sets[`Block ${block} (${start + 1}–${end})`] =
+      Array.from({ length: end - start }, (_, i) => start + i);
+    block++;
+  }
+  return sets;
+}
+
+const SETS = buildSets();
+
+// ================= QUIZ LOGIC =================
+const $ = s => document.querySelector(s);
+const speak = t => {
+  try {
+    const s = window.speechSynthesis;
+    if (!s) return;
+    const u = new SpeechSynthesisUtterance(t);
+    u.rate = 0.95;
+    u.pitch = 1.0;
+    s.cancel();
+    s.speak(u);
+  } catch {}
 };
-const $ = (s)=>document.querySelector(s);
-const speak = (t)=>{try{const s=window.speechSynthesis;if(!s) return;const u=new SpeechSynthesisUtterance(t);u.rate=0.95;u.pitch=1.0;s.cancel();s.speak(u);}catch(e){}}
-const norm = (s)=> (s||"").toLowerCase().normalize("NFKD").replace(/[^a-z]/g,"").trim();
-let activeIdxs = SETS["Set 1 (1–10)"].slice(); let items = []; let posShown = true; let index = 0; let revealed = false; let results = [];
-const setSel = document.getElementById('setSelect');
-for(const k of Object.keys(SETS)){ const opt=document.createElement('option'); opt.value=k; opt.textContent=k; setSel.appendChild(opt); }
-setSel.value = 'Set 1 (1–10)';
-document.getElementById('posChk').addEventListener('change', e=>{posShown = e.target.checked});
-document.getElementById('shuffleChk').addEventListener('change', ()=>{});
-document.getElementById('startBtn').addEventListener('click', startQuiz);
-setSel.addEventListener('change', e=>{ activeIdxs = SETS[e.target.value].slice(); });
-function startQuiz(){ const shuf = document.getElementById('shuffleChk').checked; items = activeIdxs.map(i=>WORDS[i]); if (shuf){ for(let i=items.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [items[i],items[j]]=[items[j],items[i]]; } } index=0; revealed=false; results=[]; renderQuestion(); }
-function renderQuestion(){ const m = document.getElementById('main'); if(index>=items.length){ return renderFinish(); } const cur = items[index]; m.innerHTML = `
+const norm = s =>
+  (s || "").toLowerCase().normalize("NFKD").replace(/[^a-z]/g, "").trim();
+
+let activeIdxs = [];
+let items = [];
+let posShown = true;
+let index = 0;
+let revealed = false;
+let results = [];
+
+const setSel = $("#setSelect");
+const shuffleChk = $("#shuffleChk");
+const posChk = $("#posChk");
+
+Object.keys(SETS).forEach(name => {
+  const opt = document.createElement("option");
+  opt.value = name;
+  opt.textContent = name;
+  setSel.appendChild(opt);
+});
+
+setSel.value = Object.keys(SETS)[0];
+activeIdxs = SETS[setSel.value].slice();
+
+posChk.addEventListener("change", e => {
+  posShown = e.target.checked;
+});
+setSel.addEventListener("change", e => {
+  activeIdxs = SETS[e.target.value].slice();
+});
+$("#startBtn").addEventListener("click", startQuiz);
+
+function startQuiz() {
+  const shuf = shuffleChk.checked;
+  items = activeIdxs.map(i => WORDS[i]).filter(Boolean);
+
+  if (!items.length) {
+    $("#main").innerHTML =
+      '<div class="card"><p>No words in this set. Choose another.</p></div>';
+    return;
+  }
+
+  if (shuf) {
+    for (let i = items.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [items[i], items[j]] = [items[j], items[i]];
+    }
+  }
+
+  index = 0;
+  revealed = false;
+  results = [];
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const m = $("#main");
+
+  if (index >= items.length) {
+    renderFinish();
+    return;
+  }
+
+  const cur = items[index];
+
+  m.innerHTML = `
     <div class="row">
-      <div class="muted">Word ${index+1} / ${items.length}</div>
-      <div class="score">Score: ${results.filter(r=>r.ok).length} ✓</div>
+      <div class="muted">Word ${index + 1} / ${items.length}</div>
+      <div class="score">Score: ${results.filter(r => r.ok).length} ✓</div>
     </div>
     <div class="card">
       <div class="btns">
         <button onclick="playDef()">🔊 Play definition</button>
         <button onclick="speak(items[${index}].w)">👂 Say the word</button>
       </div>
-      <p class="big"><b>Definition:</b> ${cur.d} ${posShown?`<span class="muted">(${cur.p})</span>`:''}</p>
-      <input id="answer" type="text" placeholder="Type the word here" onkeydown="handleKey(event)" autofocus />
+      <p class="big">
+        <b>Definition:</b> ${cur.d}
+        ${posShown && cur.p ? `<span class="muted">(${cur.p})</span>` : ""}
+      </p>
+      <input id="answer" type="text" placeholder="Type the word here"
+             onkeydown="handleKey(event)" autofocus />
       <div class="btns">
         <button class="primary" onclick="check()">Check</button>
         <button onclick="hint()">Give a hint</button>
@@ -157,17 +445,101 @@ function renderQuestion(){ const m = document.getElementById('main'); if(index>=
       </div>
       <div id="feedback" style="margin-top:10px"></div>
     </div>
-    <div class="row hint"><div>Tip: press <kbd>Enter</kbd> to check/continue.</div><button onclick="restart()" class="muted" style="border:none;background:transparent;text-decoration:underline">Restart set</button></div>
-  `; playDef(); }
-function playDef(){ const cur = items[index]; speak(`${cur.d}. ${posShown?`Part of speech: ${cur.p}.`:''} Type the correct spelling.`); }
-function accepted(cur){ const arr = [cur.w, ...(cur.a||[])]; return arr.map(norm); }
-function check(){ const cur = items[index]; const val = norm(document.getElementById('answer').value); const ok = accepted(cur).includes(val); results.push({w:cur.w, ok, guess:document.getElementById('answer').value}); const fb = document.getElementById('feedback'); revealed = true; if(ok){ fb.className = 'card okbg'; fb.innerHTML = `✅ Correct! <b>${cur.w}</b>`; } else { fb.className = 'card errbg'; fb.innerHTML = `❌ Not quite. The correct spelling is <b>${cur.w}</b>${cur.a?` (also accepted: ${cur.a.join(', ')})`:''}.`; } }
-function next(){ revealed=false; index++; renderQuestion(); }
-function handleKey(e){ if(e.key==='Enter'){ if(!revealed) check(); else next(); } }
-function hint(){ const cur = items[index]; const first = cur.w[0]; const last = cur.w[cur.w.length-1]; speak(`Hint: the first letter is ${first}. The word ends with ${last}.`); }
-function skip(){ const cur = items[index]; results.push({w:cur.w, ok:false, guess:document.getElementById('answer').value||'(skipped)'}); const fb = document.getElementById('feedback'); revealed=true; fb.className='card errbg'; fb.innerHTML = `⏭️ Skipped. The correct spelling is <b>${cur.w}</b>.`; }
-function restart(){ startQuiz(); }
-function renderFinish(){ const m = document.getElementById('main'); const total = items.length; const correct = results.filter(r=>r.ok).length; m.innerHTML = `
+    <div class="row hint">
+      <div>Tip: press <kbd>Enter</kbd> to check/continue.</div>
+      <button onclick="restart()" class="muted"
+              style="border:none;background:transparent;text-decoration:underline">
+        Restart set
+      </button>
+    </div>
+  `;
+
+  playDef();
+}
+
+function playDef() {
+  const cur = items[index];
+  if (!cur) return;
+  const posText = posShown && cur.p ? `Part of speech: ${cur.p}.` : "";
+  speak(`${cur.d}. ${posText} Type the correct spelling.`);
+}
+
+function accepted(cur) {
+  const alts = cur.a || [];
+  return [cur.w, ...alts].map(norm);
+}
+
+function check() {
+  const cur = items[index];
+  if (!cur) return;
+  const input = $("#answer");
+  const val = norm(input.value);
+  const ok = accepted(cur).includes(val);
+
+  results.push({ w: cur.w, ok, guess: input.value });
+
+  const fb = $("#feedback");
+  revealed = true;
+
+  if (ok) {
+    fb.className = "card okbg";
+    fb.innerHTML = `✅ Correct! <b>${cur.w}</b>`;
+  } else {
+    const also = cur.a && cur.a.length
+      ? ` (also accepted: ${cur.a.join(", ")})`
+      : "";
+    fb.className = "card errbg";
+    fb.innerHTML = `❌ Not quite. The correct spelling is <b>${cur.w}</b>${also}.`;
+  }
+}
+
+function next() {
+  revealed = false;
+  index++;
+  renderQuestion();
+}
+
+function handleKey(e) {
+  if (e.key === "Enter") {
+    if (!revealed) check();
+    else next();
+  }
+}
+
+function hint() {
+  const cur = items[index];
+  if (!cur) return;
+  const first = cur.w[0];
+  const last = cur.w[cur.w.length - 1];
+  speak(`Hint: the first letter is ${first}. The word ends with ${last}.`);
+}
+
+function skip() {
+  const cur = items[index];
+  if (!cur) return;
+  const input = $("#answer");
+  results.push({
+    w: cur.w,
+    ok: false,
+    guess: input.value || "(skipped)"
+  });
+
+  const fb = $("#feedback");
+  revealed = true;
+  fb.className = "card errbg";
+  fb.innerHTML = `⏭️ Skipped. The correct spelling is <b>${cur.w}</b>.`;
+}
+
+function restart() {
+  startQuiz();
+}
+
+function renderFinish() {
+  const m = $("#main");
+  const total = items.length;
+  const correct = results.filter(r => r.ok).length;
+
+  m.innerHTML = `
     <div class="card">
       <h2>Great work! 🎉</h2>
       <p>You scored <b>${correct}</b> out of <b>${total}</b>.</p>
@@ -176,10 +548,22 @@ function renderFinish(){ const m = document.getElementById('main'); const total 
       </div>
       <h3>Review</h3>
       <div class="review">
-        ${results.map(r=>`<div class="card" style="padding:10px"><div><b>${r.w}</b></div><div class="muted" style="font-size:13px">${WORDS.find(x=>x.w===r.w).d}</div><div class="${r.ok?'ok':'err'}" style="font-size:14px">${r.ok?'✓ Correct':`✗ Your answer: ${r.guess}`}</div></div>`).join('')}
+        ${results.map(r => {
+          const info = WORDS.find(x => x.w === r.w) || {};
+          return `
+            <div class="card" style="padding:10px">
+              <div><b>${r.w}</b></div>
+              <div class="muted" style="font-size:13px">${info.d || ""}</div>
+              <div class="${r.ok ? "ok" : "err"}" style="font-size:14px">
+                ${r.ok ? "✓ Correct" : `✗ Your answer: ${r.guess}`}
+              </div>
+            </div>
+          `;
+        }).join("")}
       </div>
     </div>
-  `; }
+  `;
+}
 </script>
 </body>
 </html>
