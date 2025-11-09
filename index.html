@@ -68,11 +68,11 @@
 
 <script>
 // ================= WORD LIST =================
-// Your original words (sample) + merged 273–450 list.
-// You can edit/add entries freely. Format:
-// { w:"word", p:"part of speech", d:"kid-friendly definition", a:["alt1","alt2"] }
+// Single source of truth: base words + add-on (234–272) + 273–450 merged.
+// Format: { w, p, d, a? }
 
 const WORDS = [
+  // Sample / early set
   { w:"hesitate", p:"verb", d:"to delay or pause typically for a moment." },
   { w:"scorcher", p:"noun", d:"something that is very hot." },
   { w:"scavenger", p:"noun", d:"an animal that feeds on dead or discarded material." },
@@ -124,7 +124,48 @@ const WORDS = [
   { w:"foreign", p:"adjective", d:"from another country." },
   { w:"paltry", p:"adjective", d:"small and not important; worthless." },
 
-  /* === merged 273–450 list (shortened explanations) === */
+  // ===== Extra words 234–272 (add-on) =====
+  { w:"gusto", p:"noun", d:"eager enjoyment; hearty enthusiasm." },
+  { w:"toiletries", p:"plural noun", d:"personal care items used for washing and grooming." },
+  { w:"gleaned", p:"verb", d:"gathered or collected bit by bit." },
+  { w:"jeered", p:"verb", d:"mocked or shouted at in a mean way." },
+  { w:"winsome", p:"adjective", d:"charming and pleasant." },
+  { w:"prattling", p:"verb", d:"chattering or talking in a silly way." },
+  { w:"galore", p:"adjective", d:"in great amounts; plenty." },
+  { w:"emporium", p:"noun", d:"a large store or place of trade." },
+  { w:"atrium", p:"noun", d:"a central open area in a building." },
+  { w:"eccentric", p:"adjective", d:"unusual or odd in behavior." },
+  { w:"savant", p:"noun", d:"a very knowledgeable or gifted person." },
+  { w:"almanac", p:"noun", d:"a yearly book of facts and tables." },
+  { w:"hippies", p:"plural noun", d:"people linked with 1960s peace-and-love culture." },
+  { w:"samosas", p:"plural noun", d:"fried pastry triangles with savory filling." },
+  { w:"campaign", p:"noun", d:"an organized effort to reach a goal." },
+  { w:"pistachio", p:"noun", d:"a small green edible nut." },
+  { w:"mosque", p:"noun", d:"a Muslim place of worship." },
+  { w:"zombielike", p:"adjective", d:"moving or acting in a dull, lifeless way." },
+  { w:"warlock", p:"noun", d:"a man who practices magic." },
+  { w:"colossus", p:"noun", d:"a person or thing of huge size or power." },
+  { w:"convulsively", p:"adverb", d:"in a jerky, sudden, uncontrollable way." },
+  { w:"dimensional", p:"adjective", d:"relating to measurements like length or height." },
+  { w:"garishly", p:"adverb", d:"in a showy or overly bright way." },
+  { w:"graffitist", p:"noun", d:"a person who makes graffiti." },
+  { w:"Everest", p:"geographical entry", d:"the world's highest mountain." },
+  { w:"dexterity", p:"noun", d:"skillful use of hands or body." },
+  { w:"cavorting", p:"verb", d:"jumping or playing around excitedly." },
+  { w:"marauder", p:"noun", d:"a person who raids or plunders." },
+  { w:"conscience", p:"noun", d:"inner sense of right and wrong." },
+  { w:"battlements", p:"plural noun", d:"castle wall tops with gaps for defense." },
+  { w:"deferential", p:"adjective", d:"showing respect to someone." },
+  { w:"albatross", p:"noun", d:"a large seabird; also a heavy burden." },
+  { w:"khaki", p:"noun", d:"a dull brownish-yellow color or cloth." },
+  { w:"opalescent", p:"adjective", d:"showing a milky, rainbow-like shine." },
+  { w:"asphalt", p:"noun", d:"black material used to pave roads." },
+  { w:"Yiddish", p:"noun", d:"a language historically used by many Jews in Europe." },
+  { w:"talcum", p:"noun", d:"a soft powdery mineral used in talc." },
+  { w:"tranquilizer", p:"noun", d:"a drug that calms or reduces anxiety." },
+  { w:"equestrian", p:"adjective", d:"relating to horseback riding." },
+
+  // ===== 273–450 merged (shortened) =====
   { w:"plaited", p:"adjective", d:"braided; interwoven." },
   { w:"monsieur", p:"noun", d:"the French title equivalent to 'Mr.'; mister." },
   { w:"manticores", p:"plural noun", d:"mythical beasts with a human head and lion body." },
@@ -327,7 +368,7 @@ function buildSets() {
       Array.from({ length: ORIGINAL_COUNT }, (_, i) => i);
   }
   if (total > ORIGINAL_COUNT) {
-    sets[`New words (${ORIGINAL_COUNT + 1}–${total})`] =
+    sets[`Add-on & Advanced (${ORIGINAL_COUNT + 1}–${total})`] =
       Array.from({ length: total - ORIGINAL_COUNT }, (_, i) => ORIGINAL_COUNT + i);
   }
 
@@ -567,4 +608,3 @@ function renderFinish() {
 </script>
 </body>
 </html>
-
